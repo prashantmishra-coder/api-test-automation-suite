@@ -1,0 +1,156 @@
+{
+  "info": {
+    "name": "API Test Automation Suite",
+    "description": "Request/response and status-code validation suite for a public REST API (JSONPlaceholder), runnable via Newman for CI integration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://jsonplaceholder.typicode.com"
+    }
+  ],
+  "item": [
+    {
+      "name": "GET /posts/1 - fetch single post",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/posts/1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response time is under 1000ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+              "});",
+              "",
+              "pm.test('Response has required fields', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('id');",
+              "    pm.expect(body).to.have.property('title');",
+              "    pm.expect(body).to.have.property('body');",
+              "    pm.expect(body).to.have.property('userId');",
+              "});",
+              "",
+              "pm.test('Post id matches requested id', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.id).to.eql(1);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /posts/9999 - not found",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/posts/9999"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 404 for non-existent resource', function () {",
+              "    pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /posts - create new post",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Automation testing with Postman\",\n  \"body\": \"Validating POST requests via CI\",\n  \"userId\": 1\n}"
+        },
+        "url": "{{base_url}}/posts"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Response contains an id for the new resource', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('id');",
+              "});",
+              "",
+              "pm.test('Response echoes the submitted title', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.title).to.eql('Automation testing with Postman');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT /posts/1 - update existing post",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": 1,\n  \"title\": \"Updated title\",\n  \"body\": \"Updated body content\",\n  \"userId\": 1\n}"
+        },
+        "url": "{{base_url}}/posts/1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Title was updated in response', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.title).to.eql('Updated title');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE /posts/1 - remove post",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base_url}}/posts/1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 on delete', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
