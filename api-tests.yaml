@@ -1,0 +1,39 @@
+name: API Regression Suite
+
+# Runs the Postman collection via Newman on every push, so API
+# regressions are caught automatically instead of relying on manual
+# Postman runs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  postman-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run Postman collection
+        run: newman run postman/api_test_collection.json --reporters cli,junit --reporter-junit-export reports/newman-report.xml
+
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pytest suite
+        run: pytest
